@@ -1,0 +1,11 @@
+# my_project/config.py
+
+MODEL:
+    MODEL_LIBRARY: 'torchvision'
+    MODEL_NAME: 'resnet50'
+DIRS:
+    ROOT_DIR: '/home/edmorris/projects/image_classification/oxford_pets'
+TRAIN:
+    NUM_EPOCHS: 40
+DATA:
+    NUM_CLASSES: 37
