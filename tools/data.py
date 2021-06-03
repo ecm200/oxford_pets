@@ -1,13 +1,18 @@
 import os
 
 import pandas as pd
+import numpy as np
+
+from torch import tensor
 from torch.utils.data import Dataset
 #from torchvision.io import read_image
 from torch.utils.data import DataLoader
+from torchvision.datasets.vision import VisionDataset
 from PIL import Image
 
-class OxfordPetsDataset(Dataset):
+class OxfordPetsDataset(VisionDataset):
     def __init__(self, annotations_file, img_dir, transform=None, target_transform=None, skiprows=0, img_file_ext='.jpg'):
+
         self.img_file_ext = img_file_ext
         self.img_labels = pd.read_csv(annotations_file, header=None, skiprows=skiprows, delim_whitespace=' ', names=['Class Name ID','Class ID','Species ID','Breed ID'])
         self.img_labels['Class Name'] = self.img_labels['Class Name ID'].str.rsplit('_', n=1, expand=True)[0]
@@ -15,16 +20,18 @@ class OxfordPetsDataset(Dataset):
         self.transform = transform
         self.target_transform = target_transform
         self.classes = list(self.img_labels['Class Name'].unique())
+        self.class_to_idx = pd.DataFrame(np.arange(0,len(self.classes),1), columns=['Class ID'], index=self.classes)['Class ID'].to_dict()
         self.imgs = self.img_labels['Class Name ID']+img_file_ext
 
     def __len__(self):
-        return len(self.img_labels)
+        return self.img_labels.shape[0]
 
     def __getitem__(self, idx):
         img_path = os.path.join(self.img_dir, self.img_labels['Class Name ID'].iloc[idx]+self.img_file_ext)
-        #image = read_image(img_path)
+        print('idx:: {}  Image Path:: {}'.format(idx, img_path))
         image = Image.open(img_path)
         label = self.img_labels['Class Name'].iloc[idx]
+        label = tensor(self.class_to_idx[label])
         if self.transform:
             image = self.transform(image)
         if self.target_transform:

@@ -2,12 +2,13 @@
 # coding: utf-8
 
 from __future__ import print_function, division
-
+import os
 import argparse
 
 # Local modules
 from cub_tools.trainer import Ignite_Trainer
 from cub_tools.transforms import makeDefaultTransforms
+from cub_tools.config import get_cfg_defaults
 
 import sys
 sys.path.insert(1, '/home/edmorris/projects/image_classification/oxford_pets/tools/')
@@ -19,17 +20,21 @@ parser.print_help()
 args = parser.parse_args()
 #config = 'configs/googlenet_config.yaml'
 
+# Load the model configuration
+cfg = get_cfg_defaults()
+cfg.merge_from_file(args.config)
+
 # Data transformers
 data_transforms = makeDefaultTransforms()
 
 ## Get the data loaders here and pass them explicitely to the Trainer object
 train_loader, val_loader = create_dataloaders(
     data_transforms=data_transforms, 
-    data_dir="data/images", 
+    data_dir=os.path.join(cfg.DIRS.ROOT_DIR ,"data/images"), 
     batch_size=16, 
     num_workers=4, 
-    train_file='data/annotations/trainval.txt', 
-    test_file='data/annotations/test.txt', 
+    train_file=os.path.join(cfg.DIRS.ROOT_DIR,'data/annotations/trainval.txt'), 
+    test_file=os.path.join(cfg.DIRS.ROOT_DIR, 'data/annotations/test.txt'), 
     shuffle={'train' : True, 'test' : False}, 
     test_batch_size=2)
 
